@@ -1,0 +1,11 @@
+{
+  "ipc": {
+    "id": "lightshow"
+  },
+  "server": {
+    "port": 9002
+  },
+  "strip": {
+    "numLeds": 288
+  }
+}
