@@ -1,9 +1,17 @@
 {
   "ipc": {
-    "id": "lightshow"
+    "id": "lightshow",
+    "retry": 500,
+    "maxRetries": 5
   },
   "server": {
-    "port": 9002
+    "port": 9002,
+    "secure": true,
+    "ssl": {
+      "key": "config/ssl/key.pem",
+      "cert": "config/ssl/cert.pem",
+      "ca": "config/ssl/ca.crt"
+    }
   },
   "strip": {
     "numLeds": 288
