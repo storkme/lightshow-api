@@ -9,10 +9,15 @@ var ws281x = require('rpi-sk6812-native');
 var numLeds = config_1.get('strip.numLeds');
 var serverPort = config_1.get('server.port');
 var app = express();
+var existingTimer;
 var state = {
     brightness: 0,
     buf: new Uint32Array(numLeds).fill(0)
 };
+app.use(function (_, __, next) {
+    clearTimeout(existingTimer);
+    next();
+});
 app.use(function (req, res, next) {
     if (req.header('content-type') === 'application/octet-stream' && parseInt(req.header('content-length')) === numLeds * 4) {
         var buf_1 = Buffer.alloc(numLeds * 4);
@@ -87,12 +92,19 @@ app.get('/bounce', function (req, res) {
         }
         return r;
     };
-    var n = 0;
-    var fn = function () { return setTimeout(function () {
-        render(blobAt(n++, 5));
-        if (n < 200)
+    var blobWidth = 5;
+    var n = blobWidth;
+    var v = 1;
+    var fn = function () {
+        existingTimer = setTimeout(function () {
+            render(blobAt(n, blobWidth));
+            if (n === numLeds - blobWidth) {
+                v = -v;
+            }
+            n += v;
             fn();
-    }, 1000 / 30); };
+        }, 1000 / 45);
+    };
     fn();
     res.status(200).send({});
 });

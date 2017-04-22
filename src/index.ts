@@ -13,16 +13,20 @@ let numLeds = <number> gc('strip.numLeds');
 let serverPort = <number> gc('server.port');
 let app = express();
 
+let existingTimer;
+
 const state = {
   brightness: 0,
   buf: new Uint32Array(numLeds).fill(0)
 };
 
+// reset any timers we have going on
+app.use((_, __, next) => {
+  clearTimeout(existingTimer);
+  next();
+});
 
-// app.use(raw({
-//   limit: numLeds * 4
-// }));
-
+// janky custom middlewhere for reading led buffers !!
 app.use((req, res, next) => {
   if (req.header('content-type') === 'application/octet-stream' && parseInt(req.header('content-length')) === numLeds * 4) {
     const buf = Buffer.alloc(numLeds * 4);
@@ -108,15 +112,24 @@ app.get('/bounce', (req, res) => {
     return r;
   };
 
-  let n = 0;
+  let blobWidth = 5;
+  let n = blobWidth;
+  let v = 1;
 
-  let fn = () => setTimeout(
-    () => {
-      render(blobAt(n++, 5));
-      if (n < 200) fn();
-    },
-    1000 / 30
-  );
+  let fn = () => {
+    existingTimer = setTimeout(
+      () => {
+        render(blobAt(n, blobWidth));
+        if (n === numLeds - blobWidth) {
+          // reverse direction
+          v = -v;
+        }
+        n += v;
+        fn();
+      },
+      1000 / 45
+    );
+  };
 
   fn();
 
