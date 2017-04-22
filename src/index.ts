@@ -1,11 +1,11 @@
-import {createServer} from 'https';
-import {openSync, readFileSync, writeFileSync, writeSync} from "fs";
+import { createServer } from 'https';
+import { openSync, readFileSync, writeFileSync, writeSync } from "fs";
 
-import {raw} from 'body-parser';
+import { raw } from 'body-parser';
 import * as express from 'express';
-import {get as gc} from 'config';
+import { get as gc } from 'config';
 
-import {htmlColor} from './colors';
+import { htmlColor } from './colors';
 
 let ws281x = require('rpi-sk6812-native');
 
@@ -97,6 +97,30 @@ app.get('/img', (req, res) => {
   let response = Buffer.from(state.buf.buffer);
   res.type('application/octet-stream');
   res.status(200).send(response);
+});
+
+app.get('/bounce', (req, res) => {
+  const blobAt = (x: number, i: number) => {
+    const r = new Uint32Array(numLeds).fill(0x00);
+    for (let j = x - i; j < x + i; j++) {
+      r[j] = 0xffffff;
+    }
+    return r;
+  };
+
+  let n = 0;
+
+  let fn = () => setTimeout(
+    () => {
+      render(blobAt(n++, 5));
+      if (n < 200) fn();
+    },
+    1000 / 30
+  );
+
+  fn();
+
+  res.status(200).send({});
 });
 
 app.get('/clear', (req, res) => {

@@ -79,6 +79,23 @@ app.get('/img', function (req, res) {
     res.type('application/octet-stream');
     res.status(200).send(response);
 });
+app.get('/bounce', function (req, res) {
+    var blobAt = function (x, i) {
+        var r = new Uint32Array(numLeds).fill(0x00);
+        for (var j = x - i; j < x + i; j++) {
+            r[j] = 0xffffff;
+        }
+        return r;
+    };
+    var n = 0;
+    var fn = function () { return setTimeout(function () {
+        render(blobAt(n++, 5));
+        if (n < 200)
+            fn();
+    }, 1000 / 30); };
+    fn();
+    res.status(200).send({});
+});
 app.get('/clear', function (req, res) {
     render(buf(0));
     res.status(200).send({});
