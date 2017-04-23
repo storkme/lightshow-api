@@ -95,7 +95,7 @@ app.get('/bounce', function (req, res) {
     };
     var blobRadius = (req.query.r ? parseInt(req.query.r) : 30) || 30;
     var n = blobRadius + 1;
-    var v = (req.query.r ? parseInt(req.query.v) : 1);
+    var v = (req.query.v ? parseInt(req.query.v) : 1);
     var _a = [req.query.c1 || 0x0000ff, req.query.c2 || 0xff0000], c1 = _a[0], c2 = _a[1];
     var fn = function () {
         existingTimer = setTimeout(function () {
