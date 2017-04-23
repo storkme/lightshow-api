@@ -85,25 +85,27 @@ app.get('/img', function (req, res) {
     res.status(200).send(response);
 });
 app.get('/bounce', function (req, res) {
-    var blobAt = function (x, i) {
-        var r = new Uint32Array(numLeds).fill(0x00);
+    var blobAt = function (x, i, c, r) {
+        if (r === void 0) { r = new Uint32Array(numLeds).fill(0x00); }
+        x = Math.round(x);
         for (var j = x - i; j < x + i; j++) {
-            r[j] = 0xffffff;
+            r[j] = r[j] | c;
         }
         return r;
     };
-    var blobWidth = 5;
-    var n = blobWidth;
-    var v = 1;
+    var blobRadius = (req.query.r ? parseInt(req.query.r) : 30) || 30;
+    var n = blobRadius + 1;
+    var v = (req.query.r ? parseInt(req.query.v) : 1);
+    var _a = [req.query.c1 || 0x0000ff, req.query.c2 || 0xff0000], c1 = _a[0], c2 = _a[1];
     var fn = function () {
         existingTimer = setTimeout(function () {
-            render(blobAt(n, blobWidth));
-            if (n === numLeds - blobWidth) {
+            render(blobAt(numLeds - n, blobRadius, c1, blobAt(n, blobRadius, c2)));
+            if (n <= blobRadius || n >= numLeds - blobRadius) {
                 v = -v;
             }
             n += v;
             fn();
-        }, 1000 / 45);
+        }, 1000 / 60);
     };
     fn();
     res.status(200).send({});

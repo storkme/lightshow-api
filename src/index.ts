@@ -104,30 +104,31 @@ app.get('/img', (req, res) => {
 });
 
 app.get('/bounce', (req, res) => {
-  const blobAt = (x: number, i: number) => {
-    const r = new Uint32Array(numLeds).fill(0x00);
+  const blobAt = (x: number, i: number, c: number, r = new Uint32Array(numLeds).fill(0x00)) => {
+    x = Math.round(x);
     for (let j = x - i; j < x + i; j++) {
-      r[j] = 0xffffff;
+      r[j] = r[j] | c;
     }
     return r;
   };
 
-  let blobWidth = 5;
-  let n = blobWidth;
-  let v = 1;
+  let blobRadius = (req.query.r ? parseInt(req.query.r) : 30) || 30;
+  let n = blobRadius + 1;
+  let v = (req.query.r ? parseInt(req.query.v) : 1);
+  let [c1, c2] = [req.query.c1 || 0x0000ff, req.query.c2 || 0xff0000];
 
   let fn = () => {
     existingTimer = setTimeout(
       () => {
-        render(blobAt(n, blobWidth));
-        if (n === numLeds - blobWidth) {
+        render(blobAt(numLeds - n, blobRadius, c1, blobAt(n, blobRadius, c2)));
+        if (n <= blobRadius || n >= numLeds - blobRadius) {
           // reverse direction
           v = -v;
         }
         n += v;
         fn();
       },
-      1000 / 45
+      1000 / 60
     );
   };
 
