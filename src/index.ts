@@ -114,7 +114,7 @@ app.get('/bounce', (req, res) => {
 
   let blobRadius = (req.query.r ? parseInt(req.query.r) : 30) || 30;
   let n = blobRadius + 1;
-  let v = (req.query.r ? parseInt(req.query.v) : 1);
+  let v = (req.query.v ? parseInt(req.query.v) : 1);
   let [c1, c2] = [req.query.c1 || 0x0000ff, req.query.c2 || 0xff0000];
 
   let fn = () => {
