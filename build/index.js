@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var https_1 = require("https");
 var fs_1 = require("fs");
+var dgram_1 = require("dgram");
 var express = require("express");
 var config_1 = require("config");
 var colors_1 = require("./colors");
@@ -10,6 +11,43 @@ var numLeds = config_1.get('strip.numLeds');
 var serverPort = config_1.get('server.port');
 var app = express();
 var existingTimer;
+var server = dgram_1.createSocket('udp4');
+server.on('error', function (err) {
+    console.log("server error:\n" + err.stack);
+    server.close();
+});
+server.on('message', function (msg, rinfo) {
+    var id = msg.readUInt8(0);
+    var err = function () {
+        console.error('no handler for msg id: ' + id);
+    };
+    (({
+        100: function () {
+            var brightness = msg.readUInt8(1);
+            console.log('setting brightness to: ' + brightness);
+            setBrightness(brightness);
+        },
+        101: function () {
+            var color = msg.readUInt32BE(1);
+            render(buf(color));
+        },
+        120: function () {
+            console.log('responding to state query from ' + rinfo.address);
+            var buffer = Buffer.allocUnsafe(6);
+            buffer.writeInt8(120, 0);
+            buffer.writeUInt8(state.brightness, 1);
+            buffer.writeUInt32BE(state.buf[0], 2);
+            console.log('  writing color: ' + state.buf[0]);
+            console.log('  writing buffer as ' + buffer.toString('hex'));
+            server.send(buffer, 43594, rinfo.address);
+        }
+    })[id] || err)();
+});
+server.on('listening', function () {
+    var _a = server.address(), address = _a.address, port = _a.port;
+    console.log("UDP server listening on " + address + ":" + port);
+});
+server.bind(43594);
 var state = {
     brightness: 0,
     buf: new Uint32Array(numLeds).fill(0)
@@ -64,11 +102,7 @@ app.get('/solid/hex/:color', function (req, res) {
 app.get('/brightness/:brightness', function (req, res) {
     var brightness = req.params.brightness;
     var bval = parseInt(brightness);
-    if (bval > 255 || bval < 0) {
-        throw new Error('Brightness must be between 0-255');
-    }
-    state.brightness = bval;
-    ws281x.setBrightness(state.brightness);
+    setBrightness(bval);
     res.status(200).send({ brightness: state.brightness });
 });
 app.get('/brightness', function (req, res) {
@@ -85,25 +119,36 @@ app.get('/img', function (req, res) {
     res.status(200).send(response);
 });
 app.get('/bounce', function (req, res) {
-    var blobAt = function (x, i, c, r) {
-        if (r === void 0) { r = new Uint32Array(numLeds).fill(0x00); }
-        x = Math.round(x);
-        for (var j = x - i; j < x + i; j++) {
-            r[j] = r[j] | c;
-        }
-        return r;
-    };
-    var blobRadius = (req.query.r ? parseInt(req.query.r) : 30) || 30;
-    var n = blobRadius + 1;
+    var numParticles = (req.query.r ? parseInt(req.query.r) : 30) || 30;
     var v = (req.query.v ? parseInt(req.query.v) : 1);
     var _a = [req.query.c1 || 0x0000ff, req.query.c2 || 0xff0000], c1 = _a[0], c2 = _a[1];
+    var step = function (pList) {
+        pList.forEach(function (particle) {
+            var newX = particle.x + particle.v;
+            if (newX < 0 || newX > numLeds - 1) {
+                particle.v = -particle.v;
+                newX = particle.x + particle.v;
+            }
+            particle.x = newX;
+        });
+    };
+    var toBuf = function (pList) {
+        var r = new Uint32Array(numLeds).fill(0x00);
+        pList.forEach(function (_a) {
+            var x = _a.x, color = _a.color;
+            r[x] = r[x] | color;
+        });
+        return r;
+    };
+    var particles = [];
+    for (var i = 0; i < numParticles; i++) {
+        particles.push({ x: i, v: v, color: c1 });
+        particles.push({ x: numLeds - i, v: -v, color: c2 });
+    }
     var fn = function () {
         existingTimer = setTimeout(function () {
-            render(blobAt(numLeds - n, blobRadius, c1, blobAt(n, blobRadius, c2)));
-            if (n <= blobRadius || n >= numLeds - blobRadius) {
-                v = -v;
-            }
-            n += v;
+            render(toBuf(particles));
+            step(particles);
             fn();
         }, 1000 / 60);
     };
@@ -134,5 +179,12 @@ function buf(color) {
 function render(buf) {
     state.buf = buf;
     ws281x.render(buf);
+}
+function setBrightness(bval) {
+    if (bval > 255 || bval < 0) {
+        throw new Error('Brightness must be between 0-255');
+    }
+    state.brightness = bval;
+    ws281x.setBrightness(state.brightness);
 }
 //# sourceMappingURL=index.js.map
