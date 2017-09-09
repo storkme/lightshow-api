@@ -6,10 +6,12 @@ var dgram_1 = require("dgram");
 var express = require("express");
 var config_1 = require("config");
 var colors_1 = require("./colors");
+var bouncy_dots_1 = require("./bouncy-dots");
 var ws281x = require('rpi-sk6812-native');
 var numLeds = config_1.get('strip.numLeds');
 var serverPort = config_1.get('server.port');
 var app = express();
+var bounce = new bouncy_dots_1.BouncyDots(numLeds, function (buf) { return ws281x.render(buf); });
 var existingTimer;
 var server = dgram_1.createSocket('udp4');
 server.on('error', function (err) {
@@ -29,7 +31,38 @@ server.on('message', function (msg, rinfo) {
         },
         101: function () {
             var color = msg.readUInt32BE(1);
+            bounce.stop();
             render(buf(color));
+        },
+        102: function () {
+            var color = msg.readUInt32BE(1);
+            var position = msg.readUInt16BE(5);
+            var size = msg.readUInt8(7);
+            var r = new Uint32Array(numLeds).fill(0x00);
+            for (var i = position - size; i <= position + size; i++) {
+                if (i >= 0 && i < r.length) {
+                    r[i] = color;
+                }
+            }
+            render(r);
+        },
+        103: function () {
+            bounce.start();
+        },
+        104: function () {
+            bounce.stop();
+        },
+        105: function () {
+            var color = msg.readUInt32BE(1);
+            var x = msg.readUInt16BE(5);
+            var v = msg.readFloatBE(7);
+            var size = msg.readUInt8(11);
+            bounce.dots.push({ color: color, x: x, v: v, size: size });
+            bounce.start();
+        },
+        106: function () {
+            bounce.dots = [];
+            bounce.stop();
         },
         120: function () {
             console.log('responding to state query from ' + rinfo.address);

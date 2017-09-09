@@ -8,12 +8,14 @@ import { get as gc } from 'config';
 
 import { htmlColor } from './colors';
 import { create } from 'domain';
+import { BouncyDots } from './bouncy-dots';
 
 let ws281x = require('rpi-sk6812-native');
 
 let numLeds = <number> gc('strip.numLeds');
 let serverPort = <number> gc('server.port');
 let app = express();
+const bounce = new BouncyDots(numLeds, (buf) => ws281x.render(buf));
 
 let existingTimer;
 
@@ -39,8 +41,44 @@ server.on('message', (msg: Buffer, rinfo) => {
     },
     101: () => {
       const color = msg.readUInt32BE(1);
+      bounce.stop();
       // console.log('setting color: ' + color);
       render(buf(color));
+    },
+    102: () => {
+      // point
+      const color = msg.readUInt32BE(1);
+      const position = msg.readUInt16BE(5);
+      const size = msg.readUInt8(7);
+      const r = new Uint32Array(numLeds).fill(0x00);
+      for (let i = position - size; i <= position + size; i++) {
+        if (i >= 0 && i < r.length) {
+          r[i] = color;
+        }
+      }
+      render(r);
+    },
+    103: () => {
+      // start bouncing
+      bounce.start();
+    },
+    104: () => {
+      // stop bouncing
+      bounce.stop();
+    },
+    105: () => {
+      // add point
+      const color = msg.readUInt32BE(1);
+      const x = msg.readUInt16BE(5);
+      const v = msg.readFloatBE(7);
+      const size = msg.readUInt8(11);
+      bounce.dots.push({ color, x, v, size });
+      bounce.start();
+    },
+    106: () => {
+      // clear points
+      bounce.dots = [];
+      bounce.stop();
     },
     120: () => {
       console.log('responding to state query from ' + rinfo.address);
