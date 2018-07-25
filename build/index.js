@@ -111,7 +111,9 @@ app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
     next();
 });
-ws281x.init(numLeds, {});
+ws281x.init(numLeds, {
+    strip_type: 'sk6812-rbgw'
+});
 app.get('/solid/html/:color', function (req, res) {
     var color = req.params.color;
     var htmlColorValue = colors_1.htmlColor(color);

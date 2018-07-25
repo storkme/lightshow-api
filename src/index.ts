@@ -138,7 +138,7 @@ app.use((req, res, next) => {
 });
 
 ws281x.init(numLeds, {
-  // strip_type: ws281x.STRIP_TYPES.WS2811_STRIP_GRB
+  strip_type: 'sk6812-rbgw'
 });
 
 app.get('/solid/html/:color', (req, res) => {
