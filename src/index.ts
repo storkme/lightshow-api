@@ -237,18 +237,20 @@ app.get('/clear', (req, res) => {
   res.status(200).send({});
 });
 
-if (gc('server.secure')) {
-  createServer({
-    key: readFileSync(<string>gc('server.ssl.key')),
-    cert: readFileSync(<string>gc('server.ssl.cert')),
-    requestCert: true,
-    rejectUnauthorized: true,
-    ca: [readFileSync(<string>gc('server.ssl.ca'))]
-  }, app).listen(serverPort);
-} else {
-  app.listen(serverPort, () => {
-    console.log('http server listening on ' + serverPort);
-  });
+if (gc('server.enable')) {
+  if (gc('server.secure')) {
+    createServer({
+      key: readFileSync(<string>gc('server.ssl.key')),
+      cert: readFileSync(<string>gc('server.ssl.cert')),
+      requestCert: true,
+      rejectUnauthorized: true,
+      ca: [readFileSync(<string>gc('server.ssl.ca'))]
+    }, app).listen(serverPort);
+  } else {
+    app.listen(serverPort, () => {
+      console.log('http server listening on ' + serverPort);
+    });
+  }
 }
 
 function buf(color) {
