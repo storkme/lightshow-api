@@ -1,10 +1,6 @@
-import { createServer } from 'https';
-import { readFileSync } from 'fs';
 import { createSocket } from 'dgram';
 import * as express from 'express';
 import { get as gc } from 'config';
-
-import { htmlColor } from './colors';
 import { BouncyDots } from './bouncy-dots';
 
 let ws281x = require('rpi-ws281x-native');
@@ -17,8 +13,12 @@ const bounce = new BouncyDots(numLeds, (buf) => ws281x.render(buf));
 let existingTimer;
 
 const server = createSocket('udp4');
-const [channel] = ws281x.init(numLeds, {
-  strip_type: 'sk6812-rbgw'
+const [channel] = ws281x.init({
+  dma: 10,
+  freq: 800000,
+  channels: [
+    { count: numLeds, gpio: 18, invert: false, brightness: 255, stripType: 'sk6812-rgbw' }
+  ]
 });
 
 server.on('error', (err) => {

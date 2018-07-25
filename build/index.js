@@ -11,8 +11,12 @@ var app = express();
 var bounce = new bouncy_dots_1.BouncyDots(numLeds, function (buf) { return ws281x.render(buf); });
 var existingTimer;
 var server = dgram_1.createSocket('udp4');
-var channel = ws281x.init(numLeds, {
-    strip_type: 'sk6812-rbgw'
+var channel = ws281x.init({
+    dma: 10,
+    freq: 800000,
+    channels: [
+        { count: numLeds, gpio: 18, invert: false, brightness: 255, stripType: 'sk6812-rgbw' }
+    ]
 })[0];
 server.on('error', function (err) {
     console.log("server error:\n" + err.stack);
