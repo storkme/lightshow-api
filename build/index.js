@@ -111,9 +111,7 @@ app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
     next();
 });
-ws281x.init(numLeds, {
-    strip_type: ws281x.STRIP_TYPES.WS2811_STRIP_GRB
-});
+ws281x.init(numLeds, {});
 app.get('/solid/html/:color', function (req, res) {
     var color = req.params.color;
     var htmlColorValue = colors_1.htmlColor(color);
@@ -192,19 +190,21 @@ app.get('/clear', function (req, res) {
     render(buf(0));
     res.status(200).send({});
 });
-if (config_1.get('server.secure')) {
-    https_1.createServer({
-        key: fs_1.readFileSync(config_1.get('server.ssl.key')),
-        cert: fs_1.readFileSync(config_1.get('server.ssl.cert')),
-        requestCert: true,
-        rejectUnauthorized: true,
-        ca: [fs_1.readFileSync(config_1.get('server.ssl.ca'))]
-    }, app).listen(serverPort);
-}
-else {
-    app.listen(serverPort, function () {
-        console.log('http server listening on ' + serverPort);
-    });
+if (config_1.get('server.enable')) {
+    if (config_1.get('server.secure')) {
+        https_1.createServer({
+            key: fs_1.readFileSync(config_1.get('server.ssl.key')),
+            cert: fs_1.readFileSync(config_1.get('server.ssl.cert')),
+            requestCert: true,
+            rejectUnauthorized: true,
+            ca: [fs_1.readFileSync(config_1.get('server.ssl.ca'))]
+        }, app).listen(serverPort);
+    }
+    else {
+        app.listen(serverPort, function () {
+            console.log('http server listening on ' + serverPort);
+        });
+    }
 }
 function buf(color) {
     return new Uint32Array(numLeds).fill(color);

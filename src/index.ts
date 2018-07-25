@@ -1,13 +1,10 @@
 import { createServer } from 'https';
-import { openSync, readFileSync, writeFileSync, writeSync } from 'fs';
+import { readFileSync } from 'fs';
 import { createSocket } from 'dgram';
-
-import { raw } from 'body-parser';
 import * as express from 'express';
 import { get as gc } from 'config';
 
 import { htmlColor } from './colors';
-import { create } from 'domain';
 import { BouncyDots } from './bouncy-dots';
 
 let ws281x = require('rpi-sk6812-native');
@@ -97,7 +94,7 @@ server.on('message', (msg: Buffer, rinfo) => {
 });
 
 server.on('listening', () => {
-  const { address, port } = server.address();
+  const { address, port } = server.address() as any;
   console.log(`UDP server listening on ${address}:${port}`);
 });
 
@@ -141,7 +138,7 @@ app.use((req, res, next) => {
 });
 
 ws281x.init(numLeds, {
-  strip_type: ws281x.STRIP_TYPES.WS2811_STRIP_GRB
+  // strip_type: ws281x.STRIP_TYPES.WS2811_STRIP_GRB
 });
 
 app.get('/solid/html/:color', (req, res) => {
