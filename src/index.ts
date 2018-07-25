@@ -17,7 +17,7 @@ const [channel] = ws281x.init({
   dma: 10,
   freq: 800000,
   channels: [
-    { count: numLeds, gpio: 18, invert: false, brightness: 255, stripType: 'sk6812-rgbw' }
+    { count: numLeds, gpio: 18, invert: false, brightness: 255, stripType: 'sk6812-rbgw' }
   ]
 });
 
@@ -36,7 +36,6 @@ server.on('message', (msg: Buffer, rinfo) => {
   (({
     100: () => {
       const brightness = msg.readUInt8(1);
-      console.log('setting brightness to: ' + brightness);
       // setBrightness(brightness);
       channel.brightness = brightness;
       ws281x.render();
@@ -47,6 +46,7 @@ server.on('message', (msg: Buffer, rinfo) => {
       // console.log('setting color: ' + color);
       // render(buf(color));
       channel.array.fill(color);
+      ws281x.render();
     },
     102: () => {
       // point
