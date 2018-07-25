@@ -17,6 +17,9 @@ const bounce = new BouncyDots(numLeds, (buf) => ws281x.render(buf));
 let existingTimer;
 
 const server = createSocket('udp4');
+const [channel] = ws281x.init(numLeds, {
+  strip_type: 'sk6812-rbgw'
+});
 
 server.on('error', (err) => {
   console.log(`server error:\n${err.stack}`);
@@ -34,13 +37,16 @@ server.on('message', (msg: Buffer, rinfo) => {
     100: () => {
       const brightness = msg.readUInt8(1);
       console.log('setting brightness to: ' + brightness);
-      setBrightness(brightness);
+      // setBrightness(brightness);
+      channel.brightness = brightness;
+      ws281x.render();
     },
     101: () => {
       const color = msg.readUInt32BE(1);
       bounce.stop();
       // console.log('setting color: ' + color);
-      render(buf(color));
+      // render(buf(color));
+      channel.array.fill(color);
     },
     102: () => {
       // point
@@ -130,125 +136,121 @@ app.use((req, res, next) => {
   }
 });
 
-app.use((req, res, next) => {
-  // lazy man's CORS !
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
-  next();
-});
+// app.use((req, res, next) => {
+//   // lazy man's CORS !
+//   res.setHeader('Access-Control-Allow-Origin', '*');
+//   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
+//   next();
+// });
 
-ws281x.init(numLeds, {
-  strip_type: 'sk6812-rbgw'
-});
-
-app.get('/solid/html/:color', (req, res) => {
-  let { color } = req.params;
-  let htmlColorValue = htmlColor(color);
-  if (htmlColorValue !== -1) {
-    let arr = buf(htmlColorValue);
-    render(arr);
-    res.status(200).send({});
-  } else {
-    throw new Error('idk that color m8');
-  }
-});
-
-app.get('/solid/hex/:color', (req, res) => {
-  let { color } = req.params;
-  let colorValue = Math.max(parseInt(color, 16), 0xffffff);
-  render(buf(colorValue));
-  res.status(200).send({});
-});
-
-app.get('/brightness/:brightness', (req, res) => {
-  let { brightness } = req.params;
-  let bval = parseInt(brightness);
-  setBrightness(bval);
-
-  res.status(200).send({ brightness: state.brightness });
-});
-
-app.get('/brightness', (req, res) => {
-  res.status(200).send({ brightness: state.brightness });
-});
-
-app.post('/img', (req, res) => {
-  let arr = new Uint32Array(req.body.buffer, 0, numLeds);
-  render(arr);
-  res.status(200).send({});
-});
-
-app.get('/img', (req, res) => {
-  let response = Buffer.from(state.buf.buffer);
-  res.type('application/octet-stream');
-  res.status(200).send(response);
-});
-
-app.get('/bounce', (req, res) => {
-  const numParticles = (req.query.r ? parseInt(req.query.r) : 30) || 30;
-  const v = (req.query.v ? parseInt(req.query.v) : 1);
-  const [c1, c2] = [req.query.c1 || 0x0000ff, req.query.c2 || 0xff0000];
-  const step = (pList) => {
-    pList.forEach((particle) => {
-      let newX = particle.x + particle.v;
-      if (newX < 0 || newX > numLeds - 1) {
-        // change direction
-        particle.v = -particle.v;
-        newX = particle.x + particle.v;
-      }
-      particle.x = newX;
-    });
-  };
-  const toBuf = (pList) => {
-    const r = new Uint32Array(numLeds).fill(0x00);
-    pList.forEach(({ x, color }) => {
-      r[x] = r[x] | color;
-    });
-    return r;
-  };
-
-  const particles = [];
-  for (let i = 0; i < numParticles; i++) {
-    particles.push({ x: i, v, color: c1 });
-    particles.push({ x: numLeds - i, v: -v, color: c2 });
-  }
-
-  let fn = () => {
-    existingTimer = setTimeout(
-      () => {
-        render(toBuf(particles));
-        step(particles);
-        fn();
-      },
-      1000 / 60
-    );
-  };
-
-  fn();
-
-  res.status(200).send({});
-});
-
-app.get('/clear', (req, res) => {
-  render(buf(0));
-  res.status(200).send({});
-});
-
-if (gc('server.enable')) {
-  if (gc('server.secure')) {
-    createServer({
-      key: readFileSync(<string>gc('server.ssl.key')),
-      cert: readFileSync(<string>gc('server.ssl.cert')),
-      requestCert: true,
-      rejectUnauthorized: true,
-      ca: [readFileSync(<string>gc('server.ssl.ca'))]
-    }, app).listen(serverPort);
-  } else {
-    app.listen(serverPort, () => {
-      console.log('http server listening on ' + serverPort);
-    });
-  }
-}
+// app.get('/solid/html/:color', (req, res) => {
+//   let { color } = req.params;
+//   let htmlColorValue = htmlColor(color);
+//   if (htmlColorValue !== -1) {
+//     let arr = buf(htmlColorValue);
+//     render(arr);
+//     res.status(200).send({});
+//   } else {
+//     throw new Error('idk that color m8');
+//   }
+// });
+//
+// app.get('/solid/hex/:color', (req, res) => {
+//   let { color } = req.params;
+//   let colorValue = Math.max(parseInt(color, 16), 0xffffff);
+//   render(buf(colorValue));
+//   res.status(200).send({});
+// });
+//
+// app.get('/brightness/:brightness', (req, res) => {
+//   let { brightness } = req.params;
+//   let bval = parseInt(brightness);
+//   setBrightness(bval);
+//
+//   res.status(200).send({ brightness: state.brightness });
+// });
+//
+// app.get('/brightness', (req, res) => {
+//   res.status(200).send({ brightness: state.brightness });
+// });
+//
+// app.post('/img', (req, res) => {
+//   let arr = new Uint32Array(req.body.buffer, 0, numLeds);
+//   render(arr);
+//   res.status(200).send({});
+// });
+//
+// app.get('/img', (req, res) => {
+//   let response = Buffer.from(state.buf.buffer);
+//   res.type('application/octet-stream');
+//   res.status(200).send(response);
+// });
+//
+// app.get('/bounce', (req, res) => {
+//   const numParticles = (req.query.r ? parseInt(req.query.r) : 30) || 30;
+//   const v = (req.query.v ? parseInt(req.query.v) : 1);
+//   const [c1, c2] = [req.query.c1 || 0x0000ff, req.query.c2 || 0xff0000];
+//   const step = (pList) => {
+//     pList.forEach((particle) => {
+//       let newX = particle.x + particle.v;
+//       if (newX < 0 || newX > numLeds - 1) {
+//         // change direction
+//         particle.v = -particle.v;
+//         newX = particle.x + particle.v;
+//       }
+//       particle.x = newX;
+//     });
+//   };
+//   const toBuf = (pList) => {
+//     const r = new Uint32Array(numLeds).fill(0x00);
+//     pList.forEach(({ x, color }) => {
+//       r[x] = r[x] | color;
+//     });
+//     return r;
+//   };
+//
+//   const particles = [];
+//   for (let i = 0; i < numParticles; i++) {
+//     particles.push({ x: i, v, color: c1 });
+//     particles.push({ x: numLeds - i, v: -v, color: c2 });
+//   }
+//
+//   let fn = () => {
+//     existingTimer = setTimeout(
+//       () => {
+//         render(toBuf(particles));
+//         step(particles);
+//         fn();
+//       },
+//       1000 / 60
+//     );
+//   };
+//
+//   fn();
+//
+//   res.status(200).send({});
+// });
+//
+// app.get('/clear', (req, res) => {
+//   render(buf(0));
+//   res.status(200).send({});
+// });
+//
+// if (gc('server.enable')) {
+//   if (gc('server.secure')) {
+//     createServer({
+//       key: readFileSync(<string>gc('server.ssl.key')),
+//       cert: readFileSync(<string>gc('server.ssl.cert')),
+//       requestCert: true,
+//       rejectUnauthorized: true,
+//       ca: [readFileSync(<string>gc('server.ssl.ca'))]
+//     }, app).listen(serverPort);
+//   } else {
+//     app.listen(serverPort, () => {
+//       console.log('http server listening on ' + serverPort);
+//     });
+//   }
+// }
 
 function buf(color) {
   return new Uint32Array(numLeds).fill(color);
