@@ -19,6 +19,6 @@
     "body-parser": "^1.17.1",
     "config": "^1.25.1",
     "express": "^4.14.1",
-    "rpi-sk6812-native": "^0.9.1"
+    "rpi-ws281x-native": "next"
   }
 }

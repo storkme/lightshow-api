@@ -7,7 +7,7 @@ import { get as gc } from 'config';
 import { htmlColor } from './colors';
 import { BouncyDots } from './bouncy-dots';
 
-let ws281x = require('rpi-sk6812-native');
+let ws281x = require('rpi-ws281x-native');
 
 let numLeds = <number> gc('strip.numLeds');
 let serverPort = <number> gc('server.port');

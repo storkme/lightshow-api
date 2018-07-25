@@ -1,9 +1,4 @@
 {
-  "ipc": {
-    "id": "lightshow",
-    "retry": 500,
-    "maxRetries": 5
-  },
   "server": {
     "enable": false,
     "port": 9002,
