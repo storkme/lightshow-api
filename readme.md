@@ -1,8 +1,17 @@
 # lightshow-api
 
-This process controls LED strips
+This process controls LED strips, connected to a Raspberry Pi.
+
+## Install
+To install typescript:
+```
+npm innpm install typescript @types/config @types/express
+```
 
 ## Build
+```
+npm run build
+```
 
 ## Operation instructions
 
