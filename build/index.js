@@ -4,6 +4,7 @@ var dgram_1 = require("dgram");
 var express = require("express");
 var config_1 = require("config");
 var bouncy_dots_1 = require("./bouncy-dots");
+var hue_walker_1 = require("./hue-walker");
 var ws281x = require('rpi-ws281x-native');
 var numLeds = config_1.get('strip.numLeds');
 var serverPort = config_1.get('server.port');
@@ -69,6 +70,19 @@ server.on('message', function (msg, rinfo) {
             bounce.dots = [];
             bounce.stop();
         },
+        114: function () {
+            var vcolor = getVC(msg, 1);
+            console.log("In 114 with colour ", vcolor);
+            bounce.stop();
+            var intcolour;
+            var hw = new hue_walker_1.HueWalker(vcolor);
+            intcolour = col(hw.current);
+            existingTimer = setInterval(function () {
+                channel.array.fill(intcolour);
+                ws281x.render();
+                intcolour = col(hw.next());
+            }, 1000);
+        },
         120: function () {
             console.log('responding to state query from ' + rinfo.address);
             var buffer = Buffer.allocUnsafe(6);
@@ -124,5 +138,44 @@ function setBrightness(bval) {
     }
     state.brightness = bval;
     ws281x.setBrightness(state.brightness);
+}
+function colr(vc) {
+    var intcol = [];
+    for (var k = 0; k < 4; k++) {
+        if (vc[k] < 0.5)
+            intcol.push(0);
+        else {
+            if (vc[k] > 254.4)
+                intcol.push(255);
+            else
+                intcol.push(Math.round(vc[k]));
+        }
+    }
+    return col(intcol);
+}
+function col(vc) {
+    return ((Math.round(vc[0]) * 256 + Math.round(vc[1])) * 256 + Math.round(vc[2])) * 256 + Math.round(vc[3]);
+}
+function getVC(msg, pos) {
+    return [msg.readUInt8(pos), msg.readUInt8(pos + 1), msg.readUInt8(pos + 2), msg.readUInt8(pos + 3)];
+}
+function cloneVC(a) {
+    var res = [];
+    for (var k = 0; k < 4; k++)
+        res.push(a[k]);
+    return res;
+}
+function subVC(a, b) {
+    var res = [];
+    for (var k = 0; k < 4; k++)
+        res.push(a[k] - b[k]);
+    return res;
+}
+function vplus(a, b) {
+    var res = [];
+    for (var k = 0; k < 4; k++) {
+        res.push(a[k] + b[k]);
+    }
+    return res;
 }
 //# sourceMappingURL=index.js.map

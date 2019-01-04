@@ -2,6 +2,7 @@ import { createSocket } from 'dgram';
 import * as express from 'express';
 import { get as gc } from 'config';
 import { BouncyDots } from './bouncy-dots';
+import { HueWalker } from './hue-walker';
 
 let ws281x = require('rpi-ws281x-native');
 
@@ -82,6 +83,22 @@ server.on('message', (msg: Buffer, rinfo) => {
       // clear points
       bounce.dots = [];
       bounce.stop();
+    },
+	114: function () {
+	    var vcolor = getVC(msg,1);
+	    console.log("In 114 with colour ",vcolor);
+        bounce.stop();
+		var intcolour;
+		
+	    var hw = new HueWalker(vcolor);
+		intcolour = col(hw.current);
+	    //hw.render(channel);
+
+	    existingTimer = setInterval(function(){
+			channel.array.fill(intcolour);
+            ws281x.render();
+			intcolour = col(hw.next());
+	    }, 1000);
     },
     120: () => {
       console.log('responding to state query from ' + rinfo.address);
@@ -267,4 +284,43 @@ function setBrightness(bval) {
   }
   state.brightness = bval;
   ws281x.setBrightness(state.brightness);
+}
+// change these into 2 colour classes
+/**
+* create a single colour integer from a real colour vector
+*/
+function colr(vc){
+   let intcol = [];
+   for (var k=0; k<4; k++){
+	if (vc[k]<0.5) intcol.push(0);
+	else {
+	   if (vc[k]>254.4) intcol.push(255);
+	   else intcol.push(Math.round(vc[k]));
+	} 
+   }
+   //console.log("colr change from to ",vc, intcol);
+   return col(intcol);
+}
+function col(vc){
+   return ((Math.round(vc[0])*256+Math.round(vc[1]))*256+Math.round(vc[2]))*256+Math.round(vc[3]);
+}
+function getVC(msg,pos){
+   return [msg.readUInt8(pos),msg.readUInt8(pos+1),msg.readUInt8(pos+2),msg.readUInt8(pos+3)];
+}
+function cloneVC(a){
+   let res = [];
+   for (var k=0; k<4; k++) res.push(a[k]);
+   return res;
+}
+function subVC(a,b){
+   let res = [];
+   for (var k=0; k<4; k++) res.push(a[k]-b[k]);
+   return res;
+}
+function vplus(a,b){
+   var res = [];
+   for (var k=0; k<4; k++){
+	res.push(a[k]+b[k]);
+   }
+   return res;
 }
