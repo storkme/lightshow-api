@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var HueWalker = (function () {
     function HueWalker(initial) {
+        this.init = [];
         this.isWhite = false;
         this.steps = 0;
         this.init = initial;
@@ -21,7 +22,7 @@ var HueWalker = (function () {
             else {
                 this.steps++;
                 for (var j = 0; j < 4; j++) {
-                    this.current.val[j] = this.current.val[j] + this.edges[this.edge][j];
+                    this.current[j] = this.current[j] + this.edges[this.edge][j];
                 }
                 return this.current;
             }
@@ -52,7 +53,7 @@ var HueWalker = (function () {
     HueWalker.prototype.rangeAndEdge = function (init) {
         var k;
         this.current = init;
-        if (init.isWhite()) {
+        if (init[1] == init[2] && init[2] == init[3]) {
             this.isWhite = true;
             return;
         }
@@ -60,7 +61,7 @@ var HueWalker = (function () {
             this.isWhite = false;
         var edge = -1;
         var whiteness = 255;
-        var extremes = [255 - init.val[1], init.val[3], 255 - init.val[2], init.val[1], 255 - init.val[3], init.val[2]];
+        var extremes = [255 - init[1], init[3], 255 - init[2], init[1], 255 - init[3], init[2]];
         for (k = 0; k < 6; k++) {
             if (extremes[k] < whiteness) {
                 whiteness = extremes[k];
@@ -73,9 +74,9 @@ var HueWalker = (function () {
     };
     HueWalker.prototype.atEndEdge = function () {
         var mm = this.minmax[this.edge];
-        return this.current.val[mm[0]] <= this.lo || this.current.val[mm[1]] >= this.hi;
+        return this.current[mm[0]] <= this.lo || this.current[mm[1]] >= this.hi;
     };
     return HueWalker;
 }());
 exports.HueWalker = HueWalker;
-//# sourceMappingURL=hue-walker.js.map
+//# sourceMappingURL=vr-colour.js.map

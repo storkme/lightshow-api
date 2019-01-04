@@ -86,7 +86,7 @@ server.on('message', (msg: Buffer, rinfo) => {
       bounce.stop();
     },
 	114: function () {
-	    var vcolor = getVC(msg,1);
+	    var vcolor = VColour.fromHex(msg,1);
 	    console.log("In 114 with colour ",vcolor);
         bounce.stop();
 		var intcolour;
@@ -305,7 +305,7 @@ function colr(vc){
 function col(vc){
    return ((Math.round(vc[0])*256+Math.round(vc[1]))*256+Math.round(vc[2]))*256+Math.round(vc[3]);
 }
-function getVC(msg,pos){
+function getVC_obs(msg,pos){
    return [msg.readUInt8(pos),msg.readUInt8(pos+1),msg.readUInt8(pos+2),msg.readUInt8(pos+3)];
 }
 function cloneVC(a){

@@ -61,5 +61,14 @@ export class VColour {
 	  }
 	  return res;
   }
+  /**
+  * returns true if r=g=b so no colour. So grey and black count as white as well :)
+  */
+  isWhite(): boolean{
+	  return this.val[1]==this.val[2] && this.val[2] == this.val[3]
+  }
+  show(){
+	  console.log("--- col "+this.val[0]+","+this.val[1]+","+this.val[2]+","+this.val[3]);
+  }
 
 }

@@ -4,6 +4,7 @@ var dgram_1 = require("dgram");
 var express = require("express");
 var config_1 = require("config");
 var bouncy_dots_1 = require("./bouncy-dots");
+var v_colour_1 = require("./v-colour");
 var hue_walker_1 = require("./hue-walker");
 var ws281x = require('rpi-ws281x-native');
 var numLeds = config_1.get('strip.numLeds');
@@ -71,7 +72,7 @@ server.on('message', function (msg, rinfo) {
             bounce.stop();
         },
         114: function () {
-            var vcolor = getVC(msg, 1);
+            var vcolor = v_colour_1.VColour.fromHex(msg, 1);
             console.log("In 114 with colour ", vcolor);
             bounce.stop();
             var intcolour;
@@ -156,7 +157,7 @@ function colr(vc) {
 function col(vc) {
     return ((Math.round(vc[0]) * 256 + Math.round(vc[1])) * 256 + Math.round(vc[2])) * 256 + Math.round(vc[3]);
 }
-function getVC(msg, pos) {
+function getVC_obs(msg, pos) {
     return [msg.readUInt8(pos), msg.readUInt8(pos + 1), msg.readUInt8(pos + 2), msg.readUInt8(pos + 3)];
 }
 function cloneVC(a) {

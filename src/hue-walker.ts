@@ -1,11 +1,15 @@
+import { VColour } from './v-colour';
+
 /**
 * This class takes an initial colour vector and then steps through all the colour points which have the 
 * same luminance (sum of colours) and saturation (range of values) as the initial colour.
+*
+* Since I now have a class for colour, you could argue that this should just be a method of VColour now!!
 */
 export class HueWalker {
 	
-  current: Array<number>;
-  private init: Array<number> = [];
+  current: VColour;
+  private init: VColour;
   private isWhite: boolean = false;
   private hi: number;
   private lo: number;
@@ -15,15 +19,16 @@ export class HueWalker {
   private minmax: Array<Object>;
   
 
-  constructor(initial) {
+  constructor(initial: VColour) {
 	this.init = initial;
 	this.setup();
 	this.rangeAndEdge(initial);
   }
   /**
   * The main output of the class, this returns the next colour, stepping through the hues
+  * Note: it returns a reference to the same colour which is held in te object.
   */
-  next(){
+  next(): VColour{
    if (this.isWhite) return this.init;
 
    for (var k=0; k<3; k++){	// do this a max of 3 times to avoid getting into a infinite loop
@@ -35,7 +40,7 @@ export class HueWalker {
 	   // just add the vector
    	   this.steps++;
 	   for (var j=0; j<4; j++){
-		this.current[j] = this.current[j] + this.edges[this.edge][j];
+		this.current.val[j] = this.current.val[j] + this.edges[this.edge][j];
 	   }
 	   return this.current; 
  	}
@@ -77,20 +82,20 @@ export class HueWalker {
   /**
   * Work out where on the colour hexagon our initial colour is.
   */
-  private rangeAndEdge(init){
-   var k;
+  private rangeAndEdge(init: VColour){
+   let k;
    this.current = init;
 
    // edge case (actually centre case :) if the colour is white then always return white.
-   if (init[1]==init[2] && init[2] == init[3]){
+   if (init.isWhite()){
 	this.isWhite = true;
 	return;
    } else this.isWhite = false;
 
    // whiteness is min of 255-r, b, 255-g, r, 255-b, g in the same order of edges.
-   var edge = -1;
-   var whiteness = 255;
-   var extremes = [255-init[1], init[3], 255-init[2], init[1], 255-init[3], init[2] ];
+   let edge = -1;
+   let whiteness = 255;
+   let extremes = [255-init.val[1], init.val[3], 255-init.val[2], init.val[1], 255-init.val[3], init.val[2] ];
    for (k=0; k<6; k++){
 	if (extremes[k]<whiteness){
 	    whiteness=extremes[k];
@@ -110,6 +115,6 @@ export class HueWalker {
   */
   private atEndEdge(){
    const mm = this.minmax[this.edge];
-   return this.current[mm[0]] <= this.lo || this.current[mm[1]] >= this.hi;
+   return this.current.val[mm[0]] <= this.lo || this.current.val[mm[1]] >= this.hi;
   }
 }
