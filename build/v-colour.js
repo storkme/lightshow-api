@@ -19,6 +19,12 @@ var VColour = (function () {
         for (var k = 0; k < 4; k++)
             this.val[k] -= a.val[k];
     };
+    VColour.prototype.diff = function (a) {
+        var res = [];
+        for (var k = 0; k < 4; k++)
+            res.push(this.val[k] - a.val[k]);
+        return res;
+    };
     VColour.prototype.addA = function (a) {
         for (var k = 0; k < 4; k++)
             this.val[k] += a[k];

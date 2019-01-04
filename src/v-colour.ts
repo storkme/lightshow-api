@@ -36,6 +36,16 @@ export class VColour {
 	  for (var k=0; k<4; k++) this.val[k] -= a.val[k];
   }
   /**
+  * subtract another colour from the current one.
+  * the difference is that this doesnt change the current colour, instead if produces a colour difference - just a 4 element array
+  * Colour differences arent the same as colours - negative values are perfectly normal. When added to a colour they give another colour.
+  */
+  diff(a: VColour): Array<number>{
+	  var res = [];
+	  for (var k=0; k<4; k++) res.push(this.val[k] - a.val[k]);
+	  return res;
+  }
+  /**
   * add an array to the current one.
   */
   addA(a: Array<number>){
