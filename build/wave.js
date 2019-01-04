@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Wave = (function () {
-    function Wave(amplitude, numLeds, wavelength, width, speed, starttime, elife, restarttime) {
+    function Wave(amplitude, wavelength, width, speed, starttime, elife, restarttime) {
+        this.numLeds = 100;
         this.amplitude = amplitude;
-        this.numLeds = numLeds;
         this.w2 = width * width;
         this.speed = speed;
         this.starttime = starttime;
@@ -14,7 +14,6 @@ var Wave = (function () {
         this.dead = false;
         this.pending = true;
         this.id = "w";
-        console.log("Wave: --- amp=", amplitude);
     }
     Wave.prototype.val = function (x, t) {
         if (t < this.starttime) {
@@ -57,6 +56,9 @@ var Wave = (function () {
         console.log("restarting " + this.id + " at time " + time);
         this.dead = false;
         this.starttime = time;
+    };
+    Wave.prototype.show = function () {
+        console.log("Wave: ---" + this.id + "--- amp=", this.amplitude);
     };
     Wave.prototype.checkForDead = function (tt, pos) {
         if (tt < this.elife * 3)

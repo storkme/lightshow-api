@@ -15,8 +15,10 @@ var WaveSet = (function () {
     WaveSet.prototype.addWave = function (w) {
         this.waves.push(w);
         var idnum = this.waves.length - 1;
-        this.waves[idnum].id = "w" + idnum;
+        if (this.waves[idnum].id == "w")
+            this.waves[idnum].id = "w" + idnum;
         this.waves[idnum].numLeds = this.numLeds;
+        this.waves[idnum].show();
     };
     WaveSet.prototype.render = function (chan, time) {
         var buf = [];

@@ -29,8 +29,9 @@ export class WaveSet {
   addWave(w:  WaveForm){
    this.waves.push(w);
    let idnum = this.waves.length-1;
-   this.waves[idnum].id = "w"+idnum;
+   if (this.waves[idnum].id=="w") this.waves[idnum].id = "w"+idnum;		// default id is 'w'
    this.waves[idnum].numLeds = this.numLeds;
+   this.waves[idnum].show();
   }
   /*
   * Add up all the waves and copy them into the given channel

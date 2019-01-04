@@ -8,7 +8,7 @@ export class Wave implements WaveForm{
 	
   // private current: VColour;
   id: string;
-  numLeds: number;		// used for wavegroup width
+  numLeds: number = 100;		// used for wavegroup width
   private dead: boolean;
   private amplitude: Array<number>;   // is a relative color vector (could be negative)
   private w2: number;		// used for wavegroup width
@@ -20,9 +20,8 @@ export class Wave implements WaveForm{
   private restartProb: number;
   private pending: boolean;
 
-  constructor(amplitude: Array<number>, numLeds: number, wavelength: number, width: number, speed: number, starttime: number, elife: number, restarttime: number) {
+  constructor(amplitude: Array<number>, wavelength: number, width: number, speed: number, starttime: number, elife: number, restarttime: number) {
    this.amplitude = amplitude;   // is a relative color vector (could be negative)
-   this.numLeds = numLeds;
    this.w2 = width * width;		// used for wavegroup width
    this.speed = speed;
    this.starttime = starttime;
@@ -33,7 +32,6 @@ export class Wave implements WaveForm{
    this.dead = false;
    this.pending = true;
    this.id = "w";
-   console.log("Wave: --- amp=",amplitude);
   }
   /**
   * return the actual value of the wave at x,t
@@ -90,6 +88,12 @@ export class Wave implements WaveForm{
    console.log("restarting "+this.id+" at time "+time);
    this.dead = false;
    this.starttime = time;
+  }
+  /**
+  * Display wave details
+  */
+  show(){
+   console.log("Wave: ---"+this.id+"--- amp=",this.amplitude);
   }
   /**
   * check if the wave is now dead (no significant values) at time tt and position pos

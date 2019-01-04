@@ -4,6 +4,8 @@ import { get as gc } from 'config';
 import { BouncyDots } from './bouncy-dots';
 import { VColour } from './v-colour';
 import { HueWalker } from './hue-walker';
+import { WaveSet } from './wave-set';
+import { Wave } from './wave';
 
 let ws281x = require('rpi-ws281x-native');
 
@@ -100,6 +102,37 @@ server.on('message', (msg: Buffer, rinfo) => {
             ws281x.render();
 			intcolour = hw.next().toInt();
 	    }, 1000);
+    },
+	// waves done by cosine
+	// current status - works with 2
+    115: function () {
+	    var vcolor = VColour.fromHex(msg,1);
+	    var vcolor2 = VColour.fromHex(msg,5);
+	    var vcolor3 = VColour.fromHex(msg,9);
+	    var vcolor4 = VColour.fromHex(msg,13);
+	
+	    console.log("115 received ",vcolor, vcolor2, vcolor3);
+        bounce.stop();
+ 	    
+	    var waves = new WaveSet(vcolor, numLeds, true);
+	    // amplitude, wavelength, width, speed, starttime, elife
+        waves.addWave(new Wave(vcolor2.diff(vcolor), 20, 30, 7, 0, 30, 20));
+		
+        waves.addWave(new Wave(vcolor3.diff(vcolor), 10, 20, -12, 15, 20, 10));
+		
+		let ww = new Wave(vcolor4.diff(vcolor), 	100, 200, 3, 5, 20, 10);
+		ww.id = "swell";
+        waves.addWave(ww);
+		
+	    var time = 0;	// in sec
+ 	    var timestep = 100;	// in msec
+
+	    existingTimer = setInterval(function(){
+			time+= timestep/1000;
+			waves.render(channel,time);	
+            ws281x.render();
+		}, timestep);
+
     },
     120: () => {
       console.log('responding to state query from ' + rinfo.address);

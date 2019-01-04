@@ -6,6 +6,8 @@ var config_1 = require("config");
 var bouncy_dots_1 = require("./bouncy-dots");
 var v_colour_1 = require("./v-colour");
 var hue_walker_1 = require("./hue-walker");
+var wave_set_1 = require("./wave-set");
+var wave_1 = require("./wave");
 var ws281x = require('rpi-ws281x-native');
 var numLeds = config_1.get('strip.numLeds');
 var serverPort = config_1.get('server.port');
@@ -83,6 +85,27 @@ server.on('message', function (msg, rinfo) {
                 ws281x.render();
                 intcolour = hw.next().toInt();
             }, 1000);
+        },
+        115: function () {
+            var vcolor = v_colour_1.VColour.fromHex(msg, 1);
+            var vcolor2 = v_colour_1.VColour.fromHex(msg, 5);
+            var vcolor3 = v_colour_1.VColour.fromHex(msg, 9);
+            var vcolor4 = v_colour_1.VColour.fromHex(msg, 13);
+            console.log("115 received ", vcolor, vcolor2, vcolor3);
+            bounce.stop();
+            var waves = new wave_set_1.WaveSet(vcolor, numLeds, true);
+            waves.addWave(new wave_1.Wave(vcolor2.diff(vcolor), 20, 30, 7, 0, 30, 20));
+            waves.addWave(new wave_1.Wave(vcolor3.diff(vcolor), 10, 20, -12, 15, 20, 10));
+            var ww = new wave_1.Wave(vcolor4.diff(vcolor), 100, 200, 3, 5, 20, 10);
+            ww.id = "swell";
+            waves.addWave(ww);
+            var time = 0;
+            var timestep = 100;
+            existingTimer = setInterval(function () {
+                time += timestep / 1000;
+                waves.render(channel, time);
+                ws281x.render();
+            }, timestep);
         },
         120: function () {
             console.log('responding to state query from ' + rinfo.address);

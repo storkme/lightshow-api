@@ -11,5 +11,6 @@ export interface WaveForm {
 	// methods
 	add(time: number, buf: Array<VColour>);
 	reset(time: number);
+	show();
 	
 }
