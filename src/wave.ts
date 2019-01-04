@@ -1,23 +1,24 @@
 import { VColour } from './v-colour';
+import { WaveForm } from './wave-form';
 
 /**
 * This represents a colour wave, defined by time and space. 
 */
-export class Wave {
+export class Wave implements WaveForm{
 	
-  current: VColour;
+  // private current: VColour;
   id: string;
-  amplitude: Array<number>;   // is a relative color vector (could be negative)
-  w2: number;		// used for wavegroup width
   numLeds: number;		// used for wavegroup width
-  speed: number;
-  starttime: number;
-  wavelength: number;
-  lam: number;
-  elife: number;		// time taken to reduce to 1/e of original
-  restartProb: number;
-  dead: boolean;
-  pending: boolean;
+  private dead: boolean;
+  private amplitude: Array<number>;   // is a relative color vector (could be negative)
+  private w2: number;		// used for wavegroup width
+  private speed: number;
+  private starttime: number;
+  private wavelength: number;
+  private lam: number;
+  private elife: number;		// time taken to reduce to 1/e of original
+  private restartProb: number;
+  private pending: boolean;
 
   constructor(amplitude: Array<number>, numLeds: number, wavelength: number, width: number, speed: number, starttime: number, elife: number, restarttime: number) {
    this.amplitude = amplitude;   // is a relative color vector (could be negative)
@@ -85,7 +86,7 @@ export class Wave {
   /**
   * after a wave is dead, allow it to start again with all the parameters the same
   */
-  reset(time){
+  reset(time: number){
    console.log("restarting "+this.id+" at time "+time);
    this.dead = false;
    this.starttime = time;

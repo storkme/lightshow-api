@@ -21,7 +21,8 @@ export class VColour {
   * Create a copy of given colour
   */
   static clone(a: VColour){
-	  return new this([a[0], a[1], a[2], a[3]]);
+	  // create a new instance 
+	  return new this([a.val[0], a.val[1], a.val[2], a.val[3]]);
   }
   /**
   * add another colour to the current one.

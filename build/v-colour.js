@@ -9,7 +9,7 @@ var VColour = (function () {
         return new this([msg.readUInt8(pos), msg.readUInt8(pos + 1), msg.readUInt8(pos + 2), msg.readUInt8(pos + 3)]);
     };
     VColour.clone = function (a) {
-        return new this([a[0], a[1], a[2], a[3]]);
+        return new this([a.val[0], a.val[1], a.val[2], a.val[3]]);
     };
     VColour.prototype.add = function (a) {
         for (var k = 0; k < 4; k++)
