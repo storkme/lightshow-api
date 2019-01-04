@@ -77,11 +77,11 @@ server.on('message', function (msg, rinfo) {
             bounce.stop();
             var intcolour;
             var hw = new hue_walker_1.HueWalker(vcolor);
-            intcolour = col(hw.current);
+            intcolour = hw.current.toInt();
             existingTimer = setInterval(function () {
                 channel.array.fill(intcolour);
                 ws281x.render();
-                intcolour = col(hw.next());
+                intcolour = hw.next().toInt();
             }, 1000);
         },
         120: function () {
@@ -140,7 +140,7 @@ function setBrightness(bval) {
     state.brightness = bval;
     ws281x.setBrightness(state.brightness);
 }
-function colr(vc) {
+function colr_obs(vc) {
     var intcol = [];
     for (var k = 0; k < 4; k++) {
         if (vc[k] < 0.5)
@@ -152,27 +152,26 @@ function colr(vc) {
                 intcol.push(Math.round(vc[k]));
         }
     }
-    return col(intcol);
 }
-function col(vc) {
+function col_obs(vc) {
     return ((Math.round(vc[0]) * 256 + Math.round(vc[1])) * 256 + Math.round(vc[2])) * 256 + Math.round(vc[3]);
 }
 function getVC_obs(msg, pos) {
     return [msg.readUInt8(pos), msg.readUInt8(pos + 1), msg.readUInt8(pos + 2), msg.readUInt8(pos + 3)];
 }
-function cloneVC(a) {
+function cloneVC_obs(a) {
     var res = [];
     for (var k = 0; k < 4; k++)
         res.push(a[k]);
     return res;
 }
-function subVC(a, b) {
+function subVC_obs(a, b) {
     var res = [];
     for (var k = 0; k < 4; k++)
         res.push(a[k] - b[k]);
     return res;
 }
-function vplus(a, b) {
+function vplus_obs(a, b) {
     var res = [];
     for (var k = 0; k < 4; k++) {
         res.push(a[k] + b[k]);
