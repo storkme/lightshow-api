@@ -2,6 +2,7 @@ import { createSocket } from 'dgram';
 import * as express from 'express';
 import { get as gc } from 'config';
 import { BouncyDots } from './bouncy-dots';
+import { VColour } from './v-colour';
 import { HueWalker } from './hue-walker';
 
 let ws281x = require('rpi-ws281x-native');
