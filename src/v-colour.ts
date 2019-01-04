@@ -7,7 +7,7 @@ export class VColour {
 	
   val: Array<number>;  
 
-  constructor(value?: Array<number> = [0,0,0,0]) {
+  constructor(value: Array<number> = [0,0,0,0]) {
 	// violating good programming by not validating the length
 	this.val = value;
   }
