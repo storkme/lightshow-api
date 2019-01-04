@@ -4,8 +4,8 @@ var dgram_1 = require("dgram");
 var express = require("express");
 var config_1 = require("config");
 var bouncy_dots_1 = require("./bouncy-dots");
-var v_colour_1 = require("./v-colour");
-var hue_walker_1 = require("./hue-walker");
+var v_colour_1 = require("./colours/v-colour");
+var vr_colour_1 = require("./colours/vr-colour");
 var wave_set_1 = require("./wave-set");
 var wave_1 = require("./wave");
 var ws281x = require('rpi-ws281x-native');
@@ -78,19 +78,18 @@ server.on('message', function (msg, rinfo) {
             console.log("In 114 with colour ", vcolor);
             bounce.stop();
             var intcolour;
-            var hw = new hue_walker_1.HueWalker(vcolor);
-            intcolour = hw.current.toInt();
+            intcolour = vcolor.toInt();
             existingTimer = setInterval(function () {
                 channel.array.fill(intcolour);
                 ws281x.render();
-                intcolour = hw.next().toInt();
+                intcolour = vcolor.next().toInt();
             }, 1000);
         },
         115: function () {
-            var vcolor = v_colour_1.VColour.fromHex(msg, 1);
-            var vcolor2 = v_colour_1.VColour.fromHex(msg, 5);
-            var vcolor3 = v_colour_1.VColour.fromHex(msg, 9);
-            var vcolor4 = v_colour_1.VColour.fromHex(msg, 13);
+            var vcolor = vr_colour_1.VRColour.fromHex(msg, 1);
+            var vcolor2 = vr_colour_1.VRColour.fromHex(msg, 5);
+            var vcolor3 = vr_colour_1.VRColour.fromHex(msg, 9);
+            var vcolor4 = vr_colour_1.VRColour.fromHex(msg, 13);
             console.log("115 received ", vcolor, vcolor2, vcolor3);
             bounce.stop();
             var waves = new wave_set_1.WaveSet(vcolor, numLeds, true);

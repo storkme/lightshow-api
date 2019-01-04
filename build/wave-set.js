@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var v_colour_1 = require("./v-colour");
-var hue_walker_1 = require("./hue-walker");
+var v_colour_1 = require("./colours/v-colour");
+var hue_walker_1 = require("./colours/hue-walker");
 var WaveSet = (function () {
     function WaveSet(background, numLeds, changeBackground) {
         if (changeBackground === void 0) { changeBackground = false; }

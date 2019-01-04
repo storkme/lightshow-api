@@ -1,4 +1,4 @@
-import { VColour } from './v-colour';
+import { VColour } from './colours/v-colour';
 import { WaveForm } from './wave-form';
 
 /**

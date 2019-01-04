@@ -2,8 +2,9 @@ import { createSocket } from 'dgram';
 import * as express from 'express';
 import { get as gc } from 'config';
 import { BouncyDots } from './bouncy-dots';
-import { VColour } from './v-colour';
-import { HueWalker } from './hue-walker';
+import { VColour } from './colours/v-colour';
+import { VRColour } from './colours/vr-colour';
+//import { HueWalker } from './colours/hue-walker';
 import { WaveSet } from './wave-set';
 import { Wave } from './wave';
 
@@ -93,23 +94,23 @@ server.on('message', (msg: Buffer, rinfo) => {
         bounce.stop();
 		var intcolour;
 		
-	    var hw = new HueWalker(vcolor);
-		intcolour = hw.current.toInt();
+	    //var hw = new HueWalker(vcolor);
+		intcolour = vcolor.toInt();
 	    //hw.render(channel);
 
 	    existingTimer = setInterval(function(){
 			channel.array.fill(intcolour);
             ws281x.render();
-			intcolour = hw.next().toInt();
+			intcolour = vcolor.next().toInt();
 	    }, 1000);
     },
 	// waves done by cosine
 	// current status - works with 2
     115: function () {
-	    var vcolor = VColour.fromHex(msg,1);
-	    var vcolor2 = VColour.fromHex(msg,5);
-	    var vcolor3 = VColour.fromHex(msg,9);
-	    var vcolor4 = VColour.fromHex(msg,13);
+	    var vcolor = VRColour.fromHex(msg,1);
+	    var vcolor2 = VRColour.fromHex(msg,5);
+	    var vcolor3 = VRColour.fromHex(msg,9);
+	    var vcolor4 = VRColour.fromHex(msg,13);
 	
 	    console.log("115 received ",vcolor, vcolor2, vcolor3);
         bounce.stop();

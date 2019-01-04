@@ -1,6 +1,6 @@
-import { VColour } from './v-colour';
+import { VColour } from './colours/v-colour';
 import { WaveForm } from './wave-form';
-import { HueWalker } from './hue-walker';
+import { HueWalker } from './colours/hue-walker';
 
 /**
 * This represents a set of things which will move. Examples would be elements of the Wave class. There could be others.

@@ -1,3 +1,4 @@
+import { HueWalker } from './hue-walker';
 /**
 * Represent colour of an LED with 4-element vector, white, red, green, blue
 * The brightness scale is 0-255 for each. 
@@ -5,7 +6,8 @@
 */
 export class VColour {
 	
-  val: Array<number>;  
+  val: Array<number>;
+  walker: HueWalker = null;
 
   constructor(value: Array<number> = [0,0,0,0]) {
 	// violating good programming by not validating the length
@@ -29,6 +31,16 @@ export class VColour {
   */
   add(a: VColour){
 	  for (var k=0; k<4; k++) this.val[k] += a.val[k];
+  }
+  /**
+  * change the hue by one step
+  * return this for chaining
+  */
+  next(){
+	  if (!this.walker) this.walker = new HueWalker(this);
+	  let x = this.walker.next();
+	  this.val = x.val;
+	  return this; 		// allow concatenation
   }
   /**
   * subtract another colour from the current one.
