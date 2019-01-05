@@ -8,10 +8,22 @@ var VColour = (function () {
         this.val = value;
     }
     VColour.fromHex = function (msg, pos) {
+        var cthis = this.childClass();
+        console.log("Test the inheritance ", cthis, this);
         return new this([msg.readUInt8(pos), msg.readUInt8(pos + 1), msg.readUInt8(pos + 2), msg.readUInt8(pos + 3)]);
     };
-    VColour.clone = function (a) {
+    VColour.cloneX = function (a) {
+        var cthis = this.childClass();
         return new this([a.val[0], a.val[1], a.val[2], a.val[3]]);
+    };
+    VColour.childClass = function () {
+        return this;
+    };
+    VColour.prototype.clone = function () {
+        var res = [];
+        for (var k = 0; k < 4; k++)
+            res.push(this.val[k]);
+        return new VColour(res);
     };
     VColour.prototype.add = function (a) {
         for (var k = 0; k < 4; k++)
@@ -43,6 +55,12 @@ var VColour = (function () {
             this.val[k] -= a[k];
     };
     VColour.prototype.toInt = function () {
+        var vc = this.val;
+        var res = ((Math.round(vc[0]) * 256 + Math.round(vc[1])) * 256 + Math.round(vc[2])) * 256 + Math.round(vc[3]);
+        console.log("V-colour col() toint", this.val, res);
+        return res;
+    };
+    VColour.prototype.toInt_undo = function () {
         var res = 0;
         for (var k = 0; k < 4; k++) {
             if (this.val[k] <= 0)
@@ -54,6 +72,7 @@ var VColour = (function () {
                     res = res * 256 + this.val[k];
             }
         }
+        console.log("V-colour toint", this.val, res);
         return res;
     };
     VColour.prototype.isWhite = function () {

@@ -20,7 +20,19 @@ export class VRColour extends VColour {
 			else res = res*256+Math.round(this.val[k]);
 		  }
 	  }
+	  console.log("VR-colour toint", this.val,res);
 	  return res;
+  }
+  static childClass(){
+	  return this;
+  }
+  /**
+  * Make copy of self
+  */
+  clone(){
+	  let res = [];
+	  for (var k=0; k<4; k++) res.push(this.val[k]);
+	  return new VRColour(res);
   }
 
 }

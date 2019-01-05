@@ -28,7 +28,17 @@ var VRColour = (function (_super) {
                     res = res * 256 + Math.round(this.val[k]);
             }
         }
+        console.log("VR-colour toint", this.val, res);
         return res;
+    };
+    VRColour.childClass = function () {
+        return this;
+    };
+    VRColour.prototype.clone = function () {
+        var res = [];
+        for (var k = 0; k < 4; k++)
+            res.push(this.val[k]);
+        return new VRColour(res);
     };
     return VRColour;
 }(v_colour_1.VColour));

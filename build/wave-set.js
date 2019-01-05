@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var v_colour_1 = require("./colours/v-colour");
 var hue_walker_1 = require("./colours/hue-walker");
 var WaveSet = (function () {
     function WaveSet(background, numLeds, changeBackground) {
@@ -27,7 +26,8 @@ var WaveSet = (function () {
             this.lastHueChange = time;
         }
         for (var k = 0; k < this.numLeds; k++)
-            buf.push(v_colour_1.VColour.clone(this.background));
+            buf.push(this.background.clone());
+        console.log("WaveSet Type of cloned background colour ", buf[0]);
         for (k = 0; k < this.waves.length; k++)
             this.waves[k].add(time, buf);
         for (k = 0; k < this.numLeds; k++) {

@@ -4,7 +4,7 @@ import { VColour } from './v-colour';
 * This class takes an initial colour vector and then steps through all the colour points which have the 
 * same luminance (sum of colours) and saturation (range of values) as the initial colour.
 *
-* Since I now have a class for colour, you could argue that this should just be a method of VColour now!!
+* This is now only used as an auxiliary class for VColour and VRColour. It could be simplified a bit. 
 */
 export class HueWalker {
 	

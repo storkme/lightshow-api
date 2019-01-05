@@ -15,7 +15,14 @@ let serverPort = <number> gc('server.port');
 let app = express();
 const bounce = new BouncyDots(numLeds, (buf) => ws281x.render(buf));
 
-let existingTimer;
+let existingTimer = null;
+
+/*
+huge amount of tidying up - remove all the messages in v-colour and vr-colour and 101
+check timestep for 115
+restore the alt toInt_undo
+remove the static child methods
+*/
 
 const server = createSocket('udp4');
 const [channel] = ws281x.init({
@@ -37,6 +44,10 @@ server.on('message', (msg: Buffer, rinfo) => {
   const err = () => {
     console.error('no handler for msg id: ' + id);
   };
+  if (existingTimer){
+	  clearTimeout(existingTimer);
+	  existingTimer = null;
+  }
 
   (({
     100: () => {
@@ -47,6 +58,8 @@ server.on('message', (msg: Buffer, rinfo) => {
     },
     101: () => {
       const color = msg.readUInt32BE(1);
+	  //const vcolor = VRColour.fromHex(msg,1);
+	  //console.log("101 read single integer colour ",color, vcolor);
       bounce.stop();
       // console.log('setting color: ' + color);
       // render(buf(color));
@@ -111,6 +124,7 @@ server.on('message', (msg: Buffer, rinfo) => {
 	    var vcolor2 = VRColour.fromHex(msg,5);
 	    var vcolor3 = VRColour.fromHex(msg,9);
 	    var vcolor4 = VRColour.fromHex(msg,13);
+		console.log("test the inheritance this should be a VR colour ",vcolor);
 	
 	    console.log("115 received ",vcolor, vcolor2, vcolor3);
         bounce.stop();
@@ -123,10 +137,10 @@ server.on('message', (msg: Buffer, rinfo) => {
 		
 		let ww = new Wave(vcolor4.diff(vcolor), 	100, 200, 3, 5, 20, 10);
 		ww.id = "swell";
-        waves.addWave(ww);
+        //waves.addWave(ww);
 		
 	    var time = 0;	// in sec
- 	    var timestep = 100;	// in msec
+ 	    var timestep = 200;	// in msec
 
 	    existingTimer = setInterval(function(){
 			time+= timestep/1000;

@@ -43,7 +43,8 @@ export class WaveSet {
 	this.lastHueChange = time;
    }
    //console.log("Adding background ",this.background);
-   for (var k=0; k<this.numLeds; k++) buf.push(VColour.clone(this.background));
+   for (var k=0; k<this.numLeds; k++) buf.push(this.background.clone());
+   console.log("WaveSet Type of cloned background colour ",buf[0]);
 
    for (k=0; k<this.waves.length; k++) this.waves[k].add(time,buf);
    //console.log(" ... finished adding");

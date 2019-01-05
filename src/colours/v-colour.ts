@@ -17,14 +17,28 @@ export class VColour {
   * Load a colour from a hex buffer
   */
   static fromHex(msg: Buffer, pos: number){
+	  let cthis = this.childClass();
+	  console.log("Test the inheritance ",cthis,this);
 	  return new this([msg.readUInt8(pos),msg.readUInt8(pos+1),msg.readUInt8(pos+2),msg.readUInt8(pos+3)]);
   }
   /**
   * Create a copy of given colour
   */
-  static clone(a: VColour){
+  static cloneX(a: VColour){
+	  let cthis = this.childClass();
 	  // create a new instance 
 	  return new this([a.val[0], a.val[1], a.val[2], a.val[3]]);
+  }
+  static childClass(){
+	  return this;
+  }
+  /**
+  * Make copy of self
+  */
+  clone(){
+	  let res = [];
+	  for (var k=0; k<4; k++) res.push(this.val[k]);
+	  return new VColour(res);
   }
   /**
   * add another colour to the current one.
@@ -73,6 +87,23 @@ export class VColour {
   /**
   * Convert to an integer, where the 32 bits are the 4 separate colours 0-255
   */
+  // GOT A HARDWARE PROBLEM - it seems to be encoding the colours as GBR instead of RGB
+  // tshow-api[1038]: VR-colour toint [ 0, 90.00000000000006, -8.1969624407887e-14, 37.99999999999982 ] 5898278
+  //  VR-colour toint [ 0, 117, 0, 11 ] 7667723
+  // VR-colour toint [ 0, 117, 0, 11 ] 7667723
+  // V-colour toint [ 0, 123, 5, 0 ] 8062208
+  // col() toint [ 0, 82, 46, 0 ] 5385728
+  //  101 read single integer colour  16711680 after I tapped red. Green showed up.
+  // 101 read single integer colour  2817792 tapped green and it showed blue
+  // 101 read single integer colour  2752767 tapped blue and it showed orange#
+  // 101 read single integer colour  16711935 tapped pink, it showed yellow
+
+  toInt_old(){
+	  let vc=this.val;
+	  let res = ((Math.round(vc[0])*256+Math.round(vc[1]))*256+Math.round(vc[2]))*256+Math.round(vc[3]);
+	  console.log("V-colour col() toint", this.val,res);
+	  return res;
+  }
   toInt(){
 	  let res = 0;
 	  for (var k=0; k<4; k++) {
@@ -82,6 +113,7 @@ export class VColour {
 			else res = res*256+this.val[k];
 		  }
 	  }
+	  console.log("V-colour toint", this.val,res);
 	  return res;
   }
   /**

@@ -13,7 +13,7 @@ var numLeds = config_1.get('strip.numLeds');
 var serverPort = config_1.get('server.port');
 var app = express();
 var bounce = new bouncy_dots_1.BouncyDots(numLeds, function (buf) { return ws281x.render(buf); });
-var existingTimer;
+var existingTimer = null;
 var server = dgram_1.createSocket('udp4');
 var channel = ws281x.init({
     dma: 10,
@@ -31,6 +31,10 @@ server.on('message', function (msg, rinfo) {
     var err = function () {
         console.error('no handler for msg id: ' + id);
     };
+    if (existingTimer) {
+        clearTimeout(existingTimer);
+        existingTimer = null;
+    }
     (({
         100: function () {
             var brightness = msg.readUInt8(1);
@@ -90,6 +94,7 @@ server.on('message', function (msg, rinfo) {
             var vcolor2 = vr_colour_1.VRColour.fromHex(msg, 5);
             var vcolor3 = vr_colour_1.VRColour.fromHex(msg, 9);
             var vcolor4 = vr_colour_1.VRColour.fromHex(msg, 13);
+            console.log("test the inheritance this should be a VR colour ", vcolor);
             console.log("115 received ", vcolor, vcolor2, vcolor3);
             bounce.stop();
             var waves = new wave_set_1.WaveSet(vcolor, numLeds, true);
@@ -97,9 +102,8 @@ server.on('message', function (msg, rinfo) {
             waves.addWave(new wave_1.Wave(vcolor3.diff(vcolor), 10, 20, -12, 15, 20, 10));
             var ww = new wave_1.Wave(vcolor4.diff(vcolor), 100, 200, 3, 5, 20, 10);
             ww.id = "swell";
-            waves.addWave(ww);
             var time = 0;
-            var timestep = 100;
+            var timestep = 200;
             existingTimer = setInterval(function () {
                 time += timestep / 1000;
                 waves.render(channel, time);
