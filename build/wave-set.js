@@ -27,7 +27,6 @@ var WaveSet = (function () {
         }
         for (var k = 0; k < this.numLeds; k++)
             buf.push(this.background.clone());
-        console.log("WaveSet Type of cloned background colour ", buf[0]);
         for (k = 0; k < this.waves.length; k++)
             this.waves[k].add(time, buf);
         for (k = 0; k < this.numLeds; k++) {

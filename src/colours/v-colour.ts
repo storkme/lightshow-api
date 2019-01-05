@@ -17,23 +17,18 @@ export class VColour {
   * Load a colour from a hex buffer
   */
   static fromHex(msg: Buffer, pos: number){
-	  let cthis = this.childClass();
-	  console.log("Test the inheritance ",cthis,this);
 	  return new this([msg.readUInt8(pos),msg.readUInt8(pos+1),msg.readUInt8(pos+2),msg.readUInt8(pos+3)]);
   }
   /**
   * Create a copy of given colour
   */
   static cloneX(a: VColour){
-	  let cthis = this.childClass();
 	  // create a new instance 
 	  return new this([a.val[0], a.val[1], a.val[2], a.val[3]]);
   }
-  static childClass(){
-	  return this;
-  }
   /**
-  * Make copy of self
+  * Make copy of self. Need to have one of these on each subclass.
+  * There seems to be no way in JS or typescript to create a new instance of whatever class another object is.
   */
   clone(){
 	  let res = [];
@@ -113,7 +108,7 @@ export class VColour {
 			else res = res*256+this.val[k];
 		  }
 	  }
-	  console.log("V-colour toint", this.val,res);
+	  //console.log("V-colour toint", this.val,res);
 	  return res;
   }
   /**

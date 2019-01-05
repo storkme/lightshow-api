@@ -18,7 +18,6 @@ export class HueWalker {
   private edges: Array<Object>;
   private minmax: Array<Object>;
   
-
   constructor(initial: VColour) {
 	this.init = initial;
 	this.setup();
@@ -42,6 +41,7 @@ export class HueWalker {
 	   for (var j=0; j<4; j++){
 		this.current.val[j] = this.current.val[j] + this.edges[this.edge][j];
 	   }
+	   // console.log("hue walker Check what type of thing it is ",this.current);
 	   return this.current; 
  	}
    }

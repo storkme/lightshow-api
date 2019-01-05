@@ -100,10 +100,11 @@ server.on('message', function (msg, rinfo) {
             var waves = new wave_set_1.WaveSet(vcolor, numLeds, true);
             waves.addWave(new wave_1.Wave(vcolor2.diff(vcolor), 20, 30, 7, 0, 30, 20));
             waves.addWave(new wave_1.Wave(vcolor3.diff(vcolor), 10, 20, -12, 15, 20, 10));
-            var ww = new wave_1.Wave(vcolor4.diff(vcolor), 100, 200, 3, 5, 20, 10);
+            var ww = new wave_1.Wave(vcolor4.diff(vcolor), 100, 200, 3, 5, 200, 10);
             ww.id = "swell";
+            waves.addWave(ww);
             var time = 0;
-            var timestep = 200;
+            var timestep = 100;
             existingTimer = setInterval(function () {
                 time += timestep / 1000;
                 waves.render(channel, time);
@@ -165,43 +166,5 @@ function setBrightness(bval) {
     }
     state.brightness = bval;
     ws281x.setBrightness(state.brightness);
-}
-function colr_obs(vc) {
-    var intcol = [];
-    for (var k = 0; k < 4; k++) {
-        if (vc[k] < 0.5)
-            intcol.push(0);
-        else {
-            if (vc[k] > 254.4)
-                intcol.push(255);
-            else
-                intcol.push(Math.round(vc[k]));
-        }
-    }
-}
-function col_obs(vc) {
-    return ((Math.round(vc[0]) * 256 + Math.round(vc[1])) * 256 + Math.round(vc[2])) * 256 + Math.round(vc[3]);
-}
-function getVC_obs(msg, pos) {
-    return [msg.readUInt8(pos), msg.readUInt8(pos + 1), msg.readUInt8(pos + 2), msg.readUInt8(pos + 3)];
-}
-function cloneVC_obs(a) {
-    var res = [];
-    for (var k = 0; k < 4; k++)
-        res.push(a[k]);
-    return res;
-}
-function subVC_obs(a, b) {
-    var res = [];
-    for (var k = 0; k < 4; k++)
-        res.push(a[k] - b[k]);
-    return res;
-}
-function vplus_obs(a, b) {
-    var res = [];
-    for (var k = 0; k < 4; k++) {
-        res.push(a[k] + b[k]);
-    }
-    return res;
 }
 //# sourceMappingURL=index.js.map

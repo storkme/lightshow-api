@@ -4,7 +4,6 @@ import { get as gc } from 'config';
 import { BouncyDots } from './bouncy-dots';
 import { VColour } from './colours/v-colour';
 import { VRColour } from './colours/vr-colour';
-//import { HueWalker } from './colours/hue-walker';
 import { WaveSet } from './wave-set';
 import { Wave } from './wave';
 
@@ -16,13 +15,6 @@ let app = express();
 const bounce = new BouncyDots(numLeds, (buf) => ws281x.render(buf));
 
 let existingTimer = null;
-
-/*
-huge amount of tidying up - remove all the messages in v-colour and vr-colour and 101
-check timestep for 115
-restore the alt toInt_undo
-remove the static child methods
-*/
 
 const server = createSocket('udp4');
 const [channel] = ws281x.init({
@@ -58,8 +50,6 @@ server.on('message', (msg: Buffer, rinfo) => {
     },
     101: () => {
       const color = msg.readUInt32BE(1);
-	  //const vcolor = VRColour.fromHex(msg,1);
-	  //console.log("101 read single integer colour ",color, vcolor);
       bounce.stop();
       // console.log('setting color: ' + color);
       // render(buf(color));
@@ -118,7 +108,6 @@ server.on('message', (msg: Buffer, rinfo) => {
 	    }, 1000);
     },
 	// waves done by cosine
-	// current status - works with 2
     115: function () {
 	    var vcolor = VRColour.fromHex(msg,1);
 	    var vcolor2 = VRColour.fromHex(msg,5);
@@ -135,12 +124,12 @@ server.on('message', (msg: Buffer, rinfo) => {
 		
         waves.addWave(new Wave(vcolor3.diff(vcolor), 10, 20, -12, 15, 20, 10));
 		
-		let ww = new Wave(vcolor4.diff(vcolor), 	100, 200, 3, 5, 20, 10);
+		let ww = new Wave(vcolor4.diff(vcolor), 	100, 200, 3, 5, 200, 10);
 		ww.id = "swell";
-        //waves.addWave(ww);
+        waves.addWave(ww);
 		
 	    var time = 0;	// in sec
- 	    var timestep = 200;	// in msec
+ 	    var timestep = 100;	// in msec
 
 	    existingTimer = setInterval(function(){
 			time+= timestep/1000;
@@ -333,43 +322,4 @@ function setBrightness(bval) {
   }
   state.brightness = bval;
   ws281x.setBrightness(state.brightness);
-}
-// change these into 2 colour classes
-/**
-* create a single colour integer from a real colour vector
-*/
-function colr_obs(vc){
-   let intcol = [];
-   for (var k=0; k<4; k++){
-	if (vc[k]<0.5) intcol.push(0);
-	else {
-	   if (vc[k]>254.4) intcol.push(255);
-	   else intcol.push(Math.round(vc[k]));
-	} 
-   }
-   //console.log("colr change from to ",vc, intcol);
-   //return col(intcol);
-}
-function col_obs(vc){
-   return ((Math.round(vc[0])*256+Math.round(vc[1]))*256+Math.round(vc[2]))*256+Math.round(vc[3]);
-}
-function getVC_obs(msg,pos){
-   return [msg.readUInt8(pos),msg.readUInt8(pos+1),msg.readUInt8(pos+2),msg.readUInt8(pos+3)];
-}
-function cloneVC_obs(a){
-   let res = [];
-   for (var k=0; k<4; k++) res.push(a[k]);
-   return res;
-}
-function subVC_obs(a,b){
-   let res = [];
-   for (var k=0; k<4; k++) res.push(a[k]-b[k]);
-   return res;
-}
-function vplus_obs(a,b){
-   var res = [];
-   for (var k=0; k<4; k++){
-	res.push(a[k]+b[k]);
-   }
-   return res;
 }
