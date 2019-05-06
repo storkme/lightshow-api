@@ -2,6 +2,10 @@ import { createSocket } from 'dgram';
 import * as express from 'express';
 import { get as gc } from 'config';
 import { BouncyDots } from './bouncy-dots';
+import { VColour } from './colours/v-colour';
+import { VRColour } from './colours/vr-colour';
+import { WaveSet } from './wave-set';
+import { Wave } from './wave';
 
 let ws281x = require('rpi-ws281x-native');
 
@@ -10,7 +14,7 @@ let serverPort = <number> gc('server.port');
 let app = express();
 const bounce = new BouncyDots(numLeds, (buf) => ws281x.render(buf));
 
-let existingTimer;
+let existingTimer = null;
 
 const server = createSocket('udp4');
 const [channel] = ws281x.init({
@@ -32,6 +36,10 @@ server.on('message', (msg: Buffer, rinfo) => {
   const err = () => {
     console.error('no handler for msg id: ' + id);
   };
+  if (existingTimer){
+	  clearTimeout(existingTimer);
+	  existingTimer = null;
+  }
 
   (({
     100: () => {
@@ -82,6 +90,58 @@ server.on('message', (msg: Buffer, rinfo) => {
       // clear points
       bounce.dots = [];
       bounce.stop();
+    },
+	/** solid change Mode: a single colour which continually changes using the hue walker.
+	* 1 parameter: the initial colour. Note; the whiter the colour, the less it will seem to change. 
+	*/
+	114: function () {
+	    var vcolor = VColour.fromHex(msg,1);
+	    console.log("In 114 with colour ",vcolor);
+        bounce.stop();
+		var intcolour;
+		
+	    //var hw = new HueWalker(vcolor);
+		intcolour = vcolor.toInt();
+	    //hw.render(channel);
+
+	    existingTimer = setInterval(function(){
+			channel.array.fill(intcolour);
+            ws281x.render();
+			intcolour = vcolor.next().toInt();
+	    }, 1000);
+    },
+	/** cosine waves mode
+	* 3 parameters, they are the colours of each of 3 waves. Each wave has lots of parameters though - size, time delay, speed
+	*/
+    115: function () {
+	    var vcolor = VRColour.fromHex(msg,1);
+	    var vcolor2 = VRColour.fromHex(msg,5);
+	    var vcolor3 = VRColour.fromHex(msg,9);
+	    var vcolor4 = VRColour.fromHex(msg,13);
+		console.log("test the inheritance this should be a VR colour ",vcolor);
+	
+	    console.log("115 received ",vcolor, vcolor2, vcolor3);
+        bounce.stop();
+ 	    
+	    var waves = new WaveSet(vcolor, numLeds, true);
+	    // amplitude, wavelength, width, speed, starttime, elife
+        waves.addWave(new Wave(vcolor2.diff(vcolor), 20, 30, 7, 0, 30, 20));
+		
+        waves.addWave(new Wave(vcolor3.diff(vcolor), 10, 20, -12, 15, 20, 10));
+		
+		let ww = new Wave(vcolor4.diff(vcolor), 	100, 200, 3, 5, 200, 10);
+		ww.id = "swell";
+        waves.addWave(ww);
+		
+	    var time = 0;	// in sec
+ 	    var timestep = 100;	// in msec
+
+	    existingTimer = setInterval(function(){
+			time+= timestep/1000;
+			waves.render(channel,time);	
+            ws281x.render();
+		}, timestep);
+
     },
     120: () => {
       console.log('responding to state query from ' + rinfo.address);

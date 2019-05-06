@@ -4,12 +4,16 @@ var dgram_1 = require("dgram");
 var express = require("express");
 var config_1 = require("config");
 var bouncy_dots_1 = require("./bouncy-dots");
+var v_colour_1 = require("./colours/v-colour");
+var vr_colour_1 = require("./colours/vr-colour");
+var wave_set_1 = require("./wave-set");
+var wave_1 = require("./wave");
 var ws281x = require('rpi-ws281x-native');
 var numLeds = config_1.get('strip.numLeds');
 var serverPort = config_1.get('server.port');
 var app = express();
 var bounce = new bouncy_dots_1.BouncyDots(numLeds, function (buf) { return ws281x.render(buf); });
-var existingTimer;
+var existingTimer = null;
 var server = dgram_1.createSocket('udp4');
 var channel = ws281x.init({
     dma: 10,
@@ -27,6 +31,10 @@ server.on('message', function (msg, rinfo) {
     var err = function () {
         console.error('no handler for msg id: ' + id);
     };
+    if (existingTimer) {
+        clearTimeout(existingTimer);
+        existingTimer = null;
+    }
     (({
         100: function () {
             var brightness = msg.readUInt8(1);
@@ -68,6 +76,40 @@ server.on('message', function (msg, rinfo) {
         106: function () {
             bounce.dots = [];
             bounce.stop();
+        },
+        114: function () {
+            var vcolor = v_colour_1.VColour.fromHex(msg, 1);
+            console.log("In 114 with colour ", vcolor);
+            bounce.stop();
+            var intcolour;
+            intcolour = vcolor.toInt();
+            existingTimer = setInterval(function () {
+                channel.array.fill(intcolour);
+                ws281x.render();
+                intcolour = vcolor.next().toInt();
+            }, 1000);
+        },
+        115: function () {
+            var vcolor = vr_colour_1.VRColour.fromHex(msg, 1);
+            var vcolor2 = vr_colour_1.VRColour.fromHex(msg, 5);
+            var vcolor3 = vr_colour_1.VRColour.fromHex(msg, 9);
+            var vcolor4 = vr_colour_1.VRColour.fromHex(msg, 13);
+            console.log("test the inheritance this should be a VR colour ", vcolor);
+            console.log("115 received ", vcolor, vcolor2, vcolor3);
+            bounce.stop();
+            var waves = new wave_set_1.WaveSet(vcolor, numLeds, true);
+            waves.addWave(new wave_1.Wave(vcolor2.diff(vcolor), 20, 30, 7, 0, 30, 20));
+            waves.addWave(new wave_1.Wave(vcolor3.diff(vcolor), 10, 20, -12, 15, 20, 10));
+            var ww = new wave_1.Wave(vcolor4.diff(vcolor), 100, 200, 3, 5, 200, 10);
+            ww.id = "swell";
+            waves.addWave(ww);
+            var time = 0;
+            var timestep = 100;
+            existingTimer = setInterval(function () {
+                time += timestep / 1000;
+                waves.render(channel, time);
+                ws281x.render();
+            }, timestep);
         },
         120: function () {
             console.log('responding to state query from ' + rinfo.address);
