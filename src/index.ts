@@ -91,6 +91,9 @@ server.on('message', (msg: Buffer, rinfo) => {
       bounce.dots = [];
       bounce.stop();
     },
+	/** solid change Mode: a single colour which continually changes using the hue walker.
+	* 1 parameter: the initial colour. Note; the whiter the colour, the less it will seem to change. 
+	*/
 	114: function () {
 	    var vcolor = VColour.fromHex(msg,1);
 	    console.log("In 114 with colour ",vcolor);
@@ -107,7 +110,9 @@ server.on('message', (msg: Buffer, rinfo) => {
 			intcolour = vcolor.next().toInt();
 	    }, 1000);
     },
-	// waves done by cosine
+	/** cosine waves mode
+	* 3 parameters, they are the colours of each of 3 waves. Each wave has lots of parameters though - size, time delay, speed
+	*/
     115: function () {
 	    var vcolor = VRColour.fromHex(msg,1);
 	    var vcolor2 = VRColour.fromHex(msg,5);
